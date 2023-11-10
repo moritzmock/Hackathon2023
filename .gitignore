@@ -1,2 +1,5 @@
 .idea/
 env/
+test_dump/
+complete.geojson
+.ipynb_checkpoints
