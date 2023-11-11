@@ -13,6 +13,7 @@ import sys
 import time
 from plotly.subplots import make_subplots
 import numpy as np
+import zipfile
 
 # pipiline core
 from sklearn.model_selection import GridSearchCV
@@ -29,11 +30,14 @@ app = dash.Dash()
 app.layout = html.Div(children=[
     html.H1(children="Plots per field"),
     dcc.Input(id="field-value", value="P_.49_823"),
-    dcc.Graph(id="plot_1"),
-    dcc.Graph(id="plot_2"),
-    dcc.Graph(id="plot_3"),
-    dcc.Graph(id="plot_4")
-
+    html.Div(children=[
+        dcc.Graph(id="plot_1", style={'display': 'inline-block'}),
+        dcc.Graph(id="plot_2", style={'display': 'inline-block'})
+    ]),
+    html.Div(children=[
+        dcc.Graph(id="plot_3", style={'display': 'inline-block'}),
+        dcc.Graph(id="plot_4", style={'display': 'inline-block'})
+    ])
 ])
 
 
@@ -62,13 +66,59 @@ def update(set_field):
     print(set_field)
     df = get_df(set_field)
 
+    # fig = make_subplots(rows=2, cols=2)
+
+    # fig.add_trace(
+    #     go.Scatter(
+    #         name='Measurement',
+    #         x=df['date'],
+    #         y=df['tmean'],
+    #         mode='lines',
+    #         line=dict(color='rgb(31, 119, 180)'),
+    #         xaxis="xaxis"
+    #     ),
+    #     row=1, col=1
+    # )
+
+    # fig.add_trace(
+    #     go.Scatter(
+    #         name='Upper Bound',
+    #         x=df['date'],
+    #         y=df['tmean'] + df['tmax'],
+    #         mode='lines',
+    #         marker=dict(color="#444"),
+    #         line=dict(width=0),
+    #         showlegend=False,
+    #         xaxis="xaxis2"
+    #     ),
+    #     row=1, col=2
+    # )
+
+    # fig.add_trace(
+    #     go.Scatter(
+    #         name='Lower Bound',
+    #         x=df['date'],
+    #         y=df['tmean'] - df['tmin'],
+    #         marker=dict(color="#444"),
+    #         line=dict(width=0),
+    #         mode='lines',
+    #         fillcolor='rgba(68, 68, 68, 0.3)',
+    #         fill='tonexty',
+    #         showlegend=False
+    #     ),
+    #     row=2, col=1
+    # )
+
+
+
+
     fig = go.Figure([
         go.Scatter(
             name='Measurement',
             x=df['date'],
             y=df['tmean'],
             mode='lines',
-            line=dict(color='rgb(31, 119, 180)'),
+            line=dict(color='rgb(31, 119, 180)')
         ),
         go.Scatter(
             name='Upper Bound',
@@ -217,4 +267,7 @@ def update(set_field):
     return fig
 
 if __name__ == "__main__":
+    if os.path.isfile("../csv.zip") and not os.path.isdir("../csv_dump"):
+        with zipfile.ZipFile("../csv.zip", "r") as zip_ref:
+            zip_ref.extractall("../")
     app.run(debug=True)
