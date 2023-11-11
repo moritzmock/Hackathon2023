@@ -28,7 +28,7 @@ from plotly.subplots import make_subplots
 app = dash.Dash()
 
 app.layout = html.Div(children=[
-    html.H1(children="Plots per field"),
+    html.H1(children="CosmicCarrots Dashboard"),
     dcc.Input(id="field-value", value="P_.49_823"),
     html.Div(children=[
         dcc.Graph(id="plot_1", style={'display': 'inline-block'}),
@@ -69,30 +69,35 @@ def update(set_field):
     model = load_pickle('../GDD prediction/gdd_forecast_arima')
     df_predict = df.loc[len(df)-5:len(df)]
     df_predict['prediction'] = model.predict(start=len(ts)-5,end=len(ts))
-    ci_forcast=model.get_forecast(steps=5)
-    df_predict['90%_CI_low']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_lower']
-    df_predict['90%_CI_upper']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_upper']
+    ci_forcast=model.get_forecast(steps=15)
+    # df_predict['90%_CI_low']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_lower']
+    # df_predict['90%_CI_upper']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_upper']
+    df_predict_low = pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_lower']
+    df_predict_high = pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_upper']
+    df_predict_mean = pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean']
+
     fig = go.Figure([
-            go.Scatter(
+        
+            go.Line(
                 name='GDD Prediction',
-                x=df_predict['date'],
-                y=df_predict['prediction'],
+                # x=df_predict['date'],
+                y=df_predict_mean,
                 mode='lines',
                 line=dict(color='rgb(31, 119, 180)'),
             ),
-            go.Scatter(
+            go.Line(
                 name='90%_CI_upper',
-                x=df_predict['date'],
-                y=df_predict['prediction'] + df_predict['90%_CI_upper'],
+                # x=df_predict['date'],
+                y=df_predict_mean + df_predict_high,
                 mode='lines',
                 marker=dict(color="#444"),
                 line=dict(width=0),
                 showlegend=False
             ),
-            go.Scatter(
+            go.Line(
                 name='90%_CI_low',
-                x=df_predict['date'],
-                y=df_predict['prediction'] - df_predict['90%_CI_low'],
+                # x=df_predict['date'],
+                y=df_predict_mean - df_predict_low,
                 marker=dict(color="#444"),
                 line=dict(width=0),
                 mode='lines',
