@@ -26,8 +26,9 @@ def get_time_series_data_from_polygon(polygon, stat="mean"):
             date_string = d.strftime("%Y-%m-%d")
             row = extract_raster_data_from_polygon(polygon, paths_dataset[date_string], stat)
             rows.append(row)
-        except:
-            print(d)
+        except Exception as e:
+            # print(str(e))
+            # print(d)
             rows.append({
                 "gdd": np.nan,
                 "pmm": np.nan,
@@ -48,8 +49,8 @@ def get_time_series_data_from_polygon(polygon, stat="mean"):
 
 
 def get_dataset_file_paths():
-    directory = "../../../Desktop/konverto_data_package"  # MORITZ
-    # directory = "../../konverto_data_package"  # JONAS
+    # directory = "../../../Desktop/konverto_data_package"  # MORITZ
+    directory = "../../konverto_data_package"  # JONAS
 
     datasets = {}
     for root, dirs, files in os.walk(directory):
@@ -94,19 +95,26 @@ def extract_raster_data_from_polygon(polygon, paths_data, stat = "mean"):
     data = {}
     mean = {}
     std = {}
+
+    if stat != "mean_std":
+        np_function = getattr(np, "nan" + stat)
+
     for dataset_name, fpath in paths_data.items():
         raster = rasterio.open(fpath)
-        if stat == "mean":
-            data[dataset_name] = np.nanmean(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
-        elif stat == "std":
-            data[dataset_name] = np.nanstd(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
-        elif stat == "max":
-            data[dataset_name] = np.nanmax(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
-        elif stat == "min":
-            data[dataset_name] = np.nanmin(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
-        elif stat == "mean_std":
-            mean[dataset_name] = np.nanmean(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
-            std[dataset_name] = np.nanstd(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
+
+        if stat != "mean_std":
+            try:
+                data[dataset_name] = np_function(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
+            except:
+                data[dataset_name] = np_function(mask(raster, polygon, crop=False, invert=True, all_touched=True, nodata=np.nan)[0])
+
+        else:
+            try:
+                mean[dataset_name] = np.nanmean(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
+                std[dataset_name] = np.nanstd(mask(raster, polygon, crop=True, invert=False, all_touched=True, nodata=np.nan)[0])
+            except:
+                mean[dataset_name] = np.nanmean(mask(raster, polygon, crop=False, invert=True, all_touched=True, nodata=np.nan)[0])
+                std[dataset_name] = np.nanstd(mask(raster, polygon, crop=False, invert=True, all_touched=True, nodata=np.nan)[0])
             data = (mean, std)
 
 
