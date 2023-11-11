@@ -20,7 +20,7 @@ app = dash.Dash()
 
 app.layout = html.Div(children=[
     html.H1(children="Plots per field"),
-    dcc.Input(id="field-value"),
+    dcc.Input(id="field-value", value="P_.49_823"),
     dcc.Graph(id="plot_1"),
     dcc.Graph(id="plot_2"),
     dcc.Graph(id="plot_3")
