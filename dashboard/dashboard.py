@@ -17,7 +17,7 @@ import zipfile
 
 # pipiline core
 from sklearn.model_selection import GridSearchCV
-
+from statsmodels.iolib.smpickle import load_pickle
 from pypots.data import load_specific_dataset
 from pypots.imputation import SAITS, Transformer
 
@@ -65,87 +65,42 @@ def get_df(set_field):
 def update(set_field):
     print(set_field)
     df = get_df(set_field)
-
-    # fig = make_subplots(rows=2, cols=2)
-
-    # fig.add_trace(
-    #     go.Scatter(
-    #         name='Measurement',
-    #         x=df['date'],
-    #         y=df['tmean'],
-    #         mode='lines',
-    #         line=dict(color='rgb(31, 119, 180)'),
-    #         xaxis="xaxis"
-    #     ),
-    #     row=1, col=1
-    # )
-
-    # fig.add_trace(
-    #     go.Scatter(
-    #         name='Upper Bound',
-    #         x=df['date'],
-    #         y=df['tmean'] + df['tmax'],
-    #         mode='lines',
-    #         marker=dict(color="#444"),
-    #         line=dict(width=0),
-    #         showlegend=False,
-    #         xaxis="xaxis2"
-    #     ),
-    #     row=1, col=2
-    # )
-
-    # fig.add_trace(
-    #     go.Scatter(
-    #         name='Lower Bound',
-    #         x=df['date'],
-    #         y=df['tmean'] - df['tmin'],
-    #         marker=dict(color="#444"),
-    #         line=dict(width=0),
-    #         mode='lines',
-    #         fillcolor='rgba(68, 68, 68, 0.3)',
-    #         fill='tonexty',
-    #         showlegend=False
-    #     ),
-    #     row=2, col=1
-    # )
-
-
-
-
+    ts = df['gdd']
+    model = load_pickle('../GDD prediction/gdd_forecast_arima')
+    df_predict = df.loc[len(df)-5:len(df)]
+    df_predict['prediction'] = model.predict(start=len(ts)-5,end=len(ts))
+    ci_forcast=model.get_forecast(steps=5)
+    df_predict['90%_CI_low']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_lower']
+    df_predict['90%_CI_upper']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_upper']
     fig = go.Figure([
-        go.Scatter(
-            name='Measurement',
-            x=df['date'],
-            y=df['tmean'],
-            mode='lines',
-            line=dict(color='rgb(31, 119, 180)')
-        ),
-        go.Scatter(
-            name='Upper Bound',
-            x=df['date'],
-            y=df['tmean'] + df['tmax'],
-            mode='lines',
-            marker=dict(color="#444"),
-            line=dict(width=0),
-            showlegend=False
-        ),
-        go.Scatter(
-            name='Lower Bound',
-            x=df['date'],
-            y=df['tmean'] - df['tmin'],
-            marker=dict(color="#444"),
-            line=dict(width=0),
-            mode='lines',
-            fillcolor='rgba(68, 68, 68, 0.3)',
-            fill='tonexty',
-            showlegend=False
-        )
-    ])
-    fig.update_layout(
-        yaxis_title='Temperature',
-        title='Continuous, variable value min max',
-        hovermode="x"
-    )
+            go.Scatter(
+                name='GDD Prediction',
+                x=df_predict['date'],
+                y=df_predict['prediction'],
+                mode='lines',
+                line=dict(color='rgb(31, 119, 180)'),
+            ),
+            go.Scatter(
+                name='90%_CI_upper',
+                x=df_predict['date'],
+                y=df_predict['prediction'] + df_predict['90%_CI_upper'],
+                mode='lines',
+                marker=dict(color="#444"),
+                line=dict(width=0),
+                showlegend=False
+            ),
+            go.Scatter(
+                name='90%_CI_low',
+                x=df_predict['date'],
+                y=df_predict['prediction'] - df_predict['90%_CI_low'],
+                marker=dict(color="#444"),
+                line=dict(width=0),
+                mode='lines',
+                fillcolor='rgba(68, 68, 68, 0.3)',
+                fill='tonexty',
+                showlegend=False
+            )
+        ])
 
     return fig
 
