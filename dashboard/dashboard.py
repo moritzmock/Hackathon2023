@@ -13,10 +13,11 @@ import sys
 import time
 from plotly.subplots import make_subplots
 import numpy as np
+import zipfile
 
 # pipiline core
 from sklearn.model_selection import GridSearchCV
-
+from statsmodels.iolib.smpickle import load_pickle
 from pypots.data import load_specific_dataset
 from pypots.imputation import SAITS, Transformer
 
@@ -29,11 +30,14 @@ app = dash.Dash()
 app.layout = html.Div(children=[
     html.H1(children="Plots per field"),
     dcc.Input(id="field-value", value="P_.49_823"),
-    dcc.Graph(id="plot_1"),
-    dcc.Graph(id="plot_2"),
-    dcc.Graph(id="plot_3"),
-    dcc.Graph(id="plot_4")
-
+    html.Div(children=[
+        dcc.Graph(id="plot_1", style={'display': 'inline-block'}),
+        dcc.Graph(id="plot_2", style={'display': 'inline-block'})
+    ]),
+    html.Div(children=[
+        dcc.Graph(id="plot_3", style={'display': 'inline-block'}),
+        dcc.Graph(id="plot_4", style={'display': 'inline-block'})
+    ])
 ])
 
 
@@ -61,41 +65,42 @@ def get_df(set_field):
 def update(set_field):
     print(set_field)
     df = get_df(set_field)
-
+    ts = df['gdd']
+    model = load_pickle('../GDD prediction/gdd_forecast_arima')
+    df_predict = df.loc[len(df)-5:len(df)]
+    df_predict['prediction'] = model.predict(start=len(ts)-5,end=len(ts))
+    ci_forcast=model.get_forecast(steps=5)
+    df_predict['90%_CI_low']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_lower']
+    df_predict['90%_CI_upper']=pd.DataFrame(ci_forcast.summary_frame(alpha=0.10)).loc[:,'mean_ci_upper']
     fig = go.Figure([
-        go.Scatter(
-            name='Measurement',
-            x=df['date'],
-            y=df['tmean'],
-            mode='lines',
-            line=dict(color='rgb(31, 119, 180)'),
-        ),
-        go.Scatter(
-            name='Upper Bound',
-            x=df['date'],
-            y=df['tmean'] + df['tmax'],
-            mode='lines',
-            marker=dict(color="#444"),
-            line=dict(width=0),
-            showlegend=False
-        ),
-        go.Scatter(
-            name='Lower Bound',
-            x=df['date'],
-            y=df['tmean'] - df['tmin'],
-            marker=dict(color="#444"),
-            line=dict(width=0),
-            mode='lines',
-            fillcolor='rgba(68, 68, 68, 0.3)',
-            fill='tonexty',
-            showlegend=False
-        )
-    ])
-    fig.update_layout(
-        yaxis_title='Temperature',
-        title='Continuous, variable value min max',
-        hovermode="x"
-    )
+            go.Scatter(
+                name='GDD Prediction',
+                x=df_predict['date'],
+                y=df_predict['prediction'],
+                mode='lines',
+                line=dict(color='rgb(31, 119, 180)'),
+            ),
+            go.Scatter(
+                name='90%_CI_upper',
+                x=df_predict['date'],
+                y=df_predict['prediction'] + df_predict['90%_CI_upper'],
+                mode='lines',
+                marker=dict(color="#444"),
+                line=dict(width=0),
+                showlegend=False
+            ),
+            go.Scatter(
+                name='90%_CI_low',
+                x=df_predict['date'],
+                y=df_predict['prediction'] - df_predict['90%_CI_low'],
+                marker=dict(color="#444"),
+                line=dict(width=0),
+                mode='lines',
+                fillcolor='rgba(68, 68, 68, 0.3)',
+                fill='tonexty',
+                showlegend=False
+            )
+        ])
 
     return fig
 
@@ -217,4 +222,7 @@ def update(set_field):
     return fig
 
 if __name__ == "__main__":
+    if os.path.isfile("../csv.zip") and not os.path.isdir("../csv_dump"):
+        with zipfile.ZipFile("../csv.zip", "r") as zip_ref:
+            zip_ref.extractall("../")
     app.run(debug=True)
