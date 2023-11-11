@@ -27,7 +27,7 @@ To run the notebook [plot_map_final](./visualize_data/plot_map_final.ipynb) it i
 
 
 ## Usage
-To run the plot_map_final notebook follow first the installation by saving the raw data in the correct folder. After that it is possible to open the juypter notebooks and run the code. In order to run the data visualisation notebook it is necessary to precompute csv_dumps from the data_extraction.ipynb notebook in the data extraction folder.
+To run the [plot_map_final](./visualize_data/plot_map_final.ipynb) notebook follow first the installation by saving the raw data in the correct folder. After that it is possible to open the juypter notebooks and run the code. In order to run the data visualisation notebook it is necessary to precompute csv_dumps from the [data_extraction.ipynb](./data_extraction/data_extraction.ipynb) notebook.
 
 
 To launch the dashboard web application change directory into the dashboard sub-folder and then run the following command in the terminal:
