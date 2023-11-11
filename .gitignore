@@ -4,3 +4,4 @@ test_dump_full/
 test_dump/
 csv_dump/
 .ipynb_checkpoints
+.DS_Store
