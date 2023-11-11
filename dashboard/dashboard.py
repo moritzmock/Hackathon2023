@@ -44,7 +44,6 @@ def update(set_field):
 
     df = pd.read_csv(path)
     df = df.rename(columns={"Unnamed: 0": "date"})
-    print(df)
 
     fig = go.Figure([
         go.Scatter(
