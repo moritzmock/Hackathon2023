@@ -27,7 +27,6 @@ app.layout = html.Div(children=[
 
 ])
 
-#P_.49_823
 
 def get_df(set_field):
     set_field = re.sub("\s", "_", set_field)
@@ -42,6 +41,7 @@ def get_df(set_field):
 
     df = pd.read_csv(path)
     df = df.rename(columns={"Unnamed: 0": "date"})
+    df = df.rename(columns={"#": "date"})
     return df
 
 
@@ -50,6 +50,7 @@ def get_df(set_field):
     Input(component_id="field-value", component_property="value")
 )
 def update(set_field):
+    print(set_field)
     df = get_df(set_field)
 
     fig = go.Figure([
