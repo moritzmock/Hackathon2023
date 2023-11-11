@@ -13,7 +13,7 @@ Data Visualization: Unleash the potential of agricultural data through interacti
 ## Usage
 
 ## Authors
-Borsani Thomas
-Di Panfilo Marco
-Mock Moritz
-Rabensteiner Jonas
+Borsani, Thomas
+Di Panfilo, Marco 
+Mock, Moritz
+Rabensteiner, Jonas
