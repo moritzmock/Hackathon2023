@@ -17,9 +17,9 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-def get_time_series_data_from_polygon(polygon, stat="mean"):
+def get_time_series_data_from_polygon(polygon, stat="mean", time_freq="12D"):
     paths_dataset = get_dataset_file_paths()
-    dti = pd.date_range("2020-03-22", end="2022-12-31", freq="12D")
+    dti = pd.date_range("2020-03-22", end="2022-12-31", freq=time_freq)
     rows = []
     for d in dti:
         try:
