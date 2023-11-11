@@ -1,4 +1,6 @@
 .idea/
 env/
 test_dump/
+csv_dump/
 .ipynb_checkpoints
+csv.zip
