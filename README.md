@@ -38,7 +38,7 @@ To launch the dashboard web application change directory into the dashboard sub-
 
 
 ## Authors
-Borsani, Thomas
-Di Panfilo, Marco 
-Mock, Moritz
+Borsani, Thomas  
+Di Panfilo, Marco  
+Mock, Moritz  
 Rabensteiner, Jonas
